@@ -125,9 +125,8 @@ static bool save_current_log = false;
  *    7a. PromptAndWait() shows an error icon and waits for the user
  *    7b. the user reboots (pulling the battery, etc) into the main system
  */
-
-static bool IsRoDebuggable() {
-  return android::base::GetBoolProperty("ro.debuggable", false);
+static bool IsUserBuild() {
+  return android::base::GetProperty("ro.build.type", "") == "user";
 }
 
 // Clear the recovery command and prepare to boot a (hopefully working) system,
@@ -907,7 +906,7 @@ Device::BuiltinAction start_recovery(Device* device, const std::vector<std::stri
         // If this is an eng or userdebug build, then automatically
         // turn the text display on if the script fails so the error
         // message is visible.
-        if (IsRoDebuggable()) {
+        if (!IsUserBuild()) {
           ui->ShowText(true);
         }
       }

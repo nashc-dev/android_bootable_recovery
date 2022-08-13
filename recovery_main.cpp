@@ -69,8 +69,8 @@ static constexpr const char* LOCALE_FILE = "/cache/recovery/last_locale";
 
 static RecoveryUI* ui = nullptr;
 
-static bool IsRoDebuggable() {
-  return android::base::GetBoolProperty("ro.debuggable", false);
+static bool IsUserBuild() {
+  return get_build_type() == "user";
 }
 
 static bool IsDeviceUnlocked() {
@@ -518,7 +518,7 @@ int main(int argc, char** argv) {
   listener_thread.detach();
 
   // Set up adb_keys and enable root before starting ADB.
-  if (IsRoDebuggable() && !fastboot) {
+  if (!IsUserBuild() && !fastboot) {
     copy_userdata_files();
     android::base::SetProperty("service.adb.root", "1");
   }
@@ -526,7 +526,7 @@ int main(int argc, char** argv) {
   while (true) {
     // We start adbd in recovery for the device with userdebug build or a unlocked bootloader.
     std::string usb_config =
-        fastboot ? "fastboot" : IsRoDebuggable() || IsDeviceUnlocked() ? "adb" : "none";
+        fastboot ? "fastboot" : !IsUserBuild() || IsDeviceUnlocked() ? "adb" : "none";
     std::string usb_state = android::base::GetProperty("sys.usb.state", "none");
     if (fastboot) {
       device->PreFastboot();
